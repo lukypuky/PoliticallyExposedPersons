@@ -35,7 +35,7 @@ class PersonController extends Controller
             'id_pep_category' => $fields['pep_category']
         ]);
 
-        $this->log('set_pep_categories()');
+        $this->log('set_pep_person()');
 
         return response([
             'message' => 'Nová osoba bola pridaná',
@@ -54,6 +54,8 @@ class PersonController extends Controller
                 'message' => 'Nenašiel sa žiaden záznam',
             ], 401);
         }
+
+        $this->log('get_pep_person()');
 
         return response()->json([
             'person' => $person
