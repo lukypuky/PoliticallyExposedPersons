@@ -13,11 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('people', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
-            $table->string('password');
-            $table->rememberToken();
+            $table->string('osoba_meno');
+            $table->string('osoba_priezvisko');
+            $table->date('osoba_datum_narodenia');
+            $table->unsignedInteger('id_pep_category')->nullable();
+            $table->foreign('id_pep_category')->references('id')->on('politically_exposed_people');
             $table->timestamps();
         });
     }
@@ -29,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('people');
     }
 };

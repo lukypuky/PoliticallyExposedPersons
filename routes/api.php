@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\PersonController;
+use App\Http\Controllers\PersonController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -17,14 +17,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 //public routes
-Route::post('/get_authorization_token ', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/get_authorization_token', [AuthController::class, 'login']);
 
 //protected routes
 Route::group(['middleware' => ['auth:sanctum']], function() {
-    Route::get('/get_pep_categories', [PersonController::class, 'index']);
-    Route::post('/delete_authorization_token', [AuthController::class, 'logout']);
-    Route::post('/refresh_token', [AuthController::class, 'refresh']);
+    Route::get('/get_pep_categories', [PersonController::class, 'getPepCategories']);
+    Route::post('/refresh_token', [AuthController::class, 'refreshToken']);
+    Route::post('/set_pep_person', [PersonController::class, 'setPepPerson']);
+    Route::post('/get_pep_person', [PersonController::class, 'getPepPerson']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -32,3 +32,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // Route::resource('get_pep_categories', PersonController::class);
+//tabulka
+
+// logovat kto kedy co volal s akym menom s akym tokenom aku funkciu
