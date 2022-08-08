@@ -43,11 +43,15 @@ class PersonController extends Controller
     }
 
     public function getPepPerson(Request $request){
-        $person = Person::where('osoba_meno', 'like', '%' . $request->get('name') . '%')
-            ->where('osoba_priezvisko', 'like', '%' . $request->get('surname') . '%')
+        $fields = $request->validate([
+            'name' => 'required|string',
+            'surname' => 'required|string'
+        ]);
+
+        $person = Person::where('osoba_meno', $fields['name'])
+            ->where('osoba_priezvisko', $fields['surname'])
             ->where('osoba_datum_narodenia', 'like', '%' . $request->get('birthdate') . '%')
             ->get();
-
 
         if($person->count() == 0){
             return response([
@@ -56,6 +60,22 @@ class PersonController extends Controller
         }
 
         $this->log('get_pep_person()');
+
+        return response()->json([
+            'person' => $person
+        ]);
+    }
+
+    public function fulltextSearch(Request $request){
+        $fields = $request->validate([
+            'name' => 'required|string'
+        ]);
+
+        $person = Person::where('osoba_meno', 'like', '%' . $fields['name'] . '%')
+            ->orWhere('osoba_priezvisko', 'like', '%' . $fields['name'] . '%')
+            ->get();
+
+        $this->log('fulltext_search()');
 
         return response()->json([
             'person' => $person

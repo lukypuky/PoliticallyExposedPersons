@@ -78,17 +78,20 @@ class AuthController extends Controller
 
     //ten isty token, len posunut platnost 
     public function refreshToken(Request $request)
-    {
-        // $user = auth()->user();
-        // $user->tokens()->delete();
+    {   
+        // return response([
+        //     "tokens" => $request->user()->currentAccessToken()
+        // ], 201);
+        
+        $user->tokens()->delete();
 
-        // $token = $user->createToken('appTopken')->plainTextToken;
+        $token = $user->createToken('appTopken')->plainTextToken;
 
-        // $response = [
-        //     'message' => 'Token bol resfreshnuty',
-        //     'token' => $token
-        // ];
+        $response = [
+            'message' => 'Token bol resfreshnuty',
+            'token' => $token
+        ];
 
-        // return response($response, 201);
+        return response($response, 201);
     }
 }

@@ -25,6 +25,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::post('/refresh_token', [AuthController::class, 'refreshToken']);
     Route::post('/set_pep_person', [PersonController::class, 'setPepPerson']);
     Route::post('/get_pep_person', [PersonController::class, 'getPepPerson']);
+    Route::post('/fulltext_search', [PersonController::class, 'fulltextSearch']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -33,5 +34,3 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // Route::resource('get_pep_categories', PersonController::class);
 //tabulka
-
-// logovat kto kedy co volal s akym menom s akym tokenom aku funkciu
