@@ -12,6 +12,7 @@ class Log extends Model
     protected $fillable = [
         'id_user',
         'token',
-        'function'
+        'function',
+        'description'
     ];
 }

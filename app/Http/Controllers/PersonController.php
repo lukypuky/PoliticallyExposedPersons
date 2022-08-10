@@ -35,7 +35,7 @@ class PersonController extends Controller
             'id_pep_category' => $fields['pep_category']
         ]);
 
-        $this->log('set_pep_person()');
+        $this->log('set_pep_person()', 'nova osoba bola pridana');
 
         return response([
             'message' => 'Nová osoba bola pridaná',
@@ -54,6 +54,8 @@ class PersonController extends Controller
             ->get();
 
         if($person->count() == 0){
+            $this->log('get_pep_person()', 'nenasiel sa ziaden zaznam');
+
             return response([
                 'message' => 'Nenašiel sa žiaden záznam',
             ], 401);
@@ -74,15 +76,23 @@ class PersonController extends Controller
         $person = Person::where('osoba_meno', 'like', '%' . $fields['name'] . '%')
             ->orWhere('osoba_priezvisko', 'like', '%' . $fields['name'] . '%')
             ->get();
+        
+        if($person->count() == 0){
+            $this->log('get_pep_person()', 'nenasiel sa ziaden zaznam');
+    
+            return response([
+                'message' => 'Nenašiel sa žiaden záznam',
+            ], 401);
+        }
 
-        $this->log('fulltext_search()');
+        $this->log('fulltext_search()',);
 
         return response()->json([
             'person' => $person
         ]);
     }
 
-    public function log($functionName){
+    public function log($functionName, $description=null){
         $user = auth()->user();
 
         $lastToken = Personal_access_token::where('tokenable_id', $user->id)
@@ -92,7 +102,8 @@ class PersonController extends Controller
         Log::create([
             'id_user' => $user->id,
             'token' => $lastToken->token,
-            'function' => $functionName
+            'function' => $functionName,
+            'description' => $description
         ]);
     }
 

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreign('id_user')->references('id')->on('users');
             $table->string('token')->nullable();
             $table->string('function');
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

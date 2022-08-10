@@ -7,9 +7,8 @@ use App\Models\Log;
 use App\Models\Personal_access_token;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use \DateTime;
 
 class AuthController extends Controller
 {
@@ -20,6 +19,17 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('name', $fields['name'])->first();
+
+        if(!$user || $user->password != $fields['password']){
+            Log::create([
+                'function' => 'get_authorization_token()',
+                'description' => 'zle prihlasovacie udaje (zadane meno:'.$fields['name'].')'
+            ]);
+
+            return response([
+                "message" => 'Zlé prihlasovacie údaje'
+            ], 401);
+        }
 
         $lastToken = Personal_access_token::where('tokenable_id', $user->id)
             ->orderBy('expires_at','desc')
@@ -34,7 +44,8 @@ class AuthController extends Controller
                 Log::create([
                     'id_user' => $user->id,
                     'token' => $lastToken->token,
-                    'function' => 'get_authorization_token()'
+                    'function' => 'get_authorization_token()',
+                    'description' => 'pouzivatel je uz prihlaseny'
                 ]);
 
                 return response([
@@ -43,23 +54,9 @@ class AuthController extends Controller
             }
         }
 
-        if(!$user || $user->password != $fields['password']){
-            Log::create([
-                'function' => 'get_authorization_token()'
-            ]);
-
-            return response([
-                "message" => 'Zlé prihlasovacie údaje'
-            ], 401);
-        }
-
-        $token = $user->createToken('appTopken')->plainTextToken;
-
-        $expirationTime = date('Y-m-d H:i:s', strtotime(Carbon::now() . ' + 15 minute')); ;
-        Personal_access_token::where('tokenable_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->take(1)
-            ->update(['expires_at' => $expirationTime]);
+        $expirationTime = new DateTime();
+        $expirationTime->modify('+15 minutes');
+        $token = $user->createToken('appTopken',[], $expirationTime)->plainTextToken;
 
         $lastCreatedToken = Personal_access_token::where('tokenable_id', $user->id)
             ->orderBy('created_at', 'desc')
@@ -68,7 +65,8 @@ class AuthController extends Controller
         Log::create([
             'id_user' => $user->id,
             'token' => $lastCreatedToken->token,
-            'function' => 'get_authorization_token()'
+            'function' => 'get_authorization_token()',
+            'description' => 'prihlasenie pouzivatela (meno:'.$fields['name'].')'
         ]);
 
         return response([
@@ -76,22 +74,29 @@ class AuthController extends Controller
         ], 201);
     }
 
-    //ten isty token, len posunut platnost 
     public function refreshToken(Request $request)
     {   
-        // return response([
-        //     "tokens" => $request->user()->currentAccessToken()
-        // ], 201);
+        $user = auth()->user();
+
+        $token = Personal_access_token::where('tokenable_id', $user->id)
+            ->orderBy('expires_at','desc')
+            ->first();
         
-        $user->tokens()->delete();
+        $newExpirationTime = new DateTime($token->expires_at);
+        $newExpirationTime->modify('+15 minutes');
 
-        $token = $user->createToken('appTopken')->plainTextToken;
+        Personal_access_token::where('id', $token->id)
+            ->update(['expires_at' => $newExpirationTime]);
 
-        $response = [
-            'message' => 'Token bol resfreshnuty',
-            'token' => $token
-        ];
+        Log::create([
+            'id_user' => $user->id,
+            'token' => $token->token,
+            'function' => 'refresh_token()',
+            'description' => 'token bol refreshnuty'
+        ]);
 
-        return response($response, 201);
+        return response([
+            "message" => 'Token bol refreshnutý'
+        ], 201);
     }
 }
